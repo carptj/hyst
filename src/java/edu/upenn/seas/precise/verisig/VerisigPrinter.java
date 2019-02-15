@@ -297,13 +297,38 @@ public class VerisigPrinter extends ToolPrinter
 		printModes();
 		printJumps();
 
-		if( outputType == OutputType.FILE ) {
-			Pickler pickler = new Pickler();
+		Pickler pickler = new Pickler();
+		switch(outputType) {
+		case FILE:
+			pickler = new Pickler();
 			try {
 				pickler.dump(plant, outputStream);
 			} catch (IOException e) {
 				throw new AutomatonExportException("Error pickling", e);
 			}
+			break;
+		case GUI:
+			break;
+		case NONE:
+			break;
+		case STDOUT:
+			break;
+		case STRING:
+			pickler = new Pickler();
+			try {
+				pickler.dump(plant, outputStream);
+			} catch (IOException e) {
+				throw new AutomatonExportException("Error pickling", e);
+			}
+			break;
+		default:
+			break;
+		
+		
+		}
+		
+		if( outputType == OutputType.FILE ) {
+			
 		} else {
 			printLine(plant.toString(true));
 		}
