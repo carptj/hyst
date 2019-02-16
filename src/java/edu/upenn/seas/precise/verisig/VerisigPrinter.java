@@ -24,7 +24,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 /**
- * Printer for Flow* models. Based on Chris' Boogie printer.
+ * Printer for Verisig models. Based on Chris' Boogie printer.
  * 
  * @author Taylor Carpenter (2-2019)
  *
@@ -35,6 +35,9 @@ public class VerisigPrinter extends ToolPrinter
 
 	private BaseComponent ha;
 	private Tab plant;
+	private Arr states;
+	private Tab modes;
+	private Tab glue;
 
 	private int modeIndex = 1;
 	private HashMap<String, Integer> nameIndexMapping;
@@ -46,6 +49,14 @@ public class VerisigPrinter extends ToolPrinter
 		preconditions = new Preconditions(true);
 
 		plant = new Tab();
+		states = new Arr();
+		modes = new Tab();
+		glue = new Tab();
+		
+		plant.put("states", states);
+		plant.put("modes", modes);
+		plant.put("glue", glue);
+		
 		nameIndexMapping = new HashMap<>();
 	}
 
@@ -53,15 +64,6 @@ public class VerisigPrinter extends ToolPrinter
 	protected String getCommentPrefix()
 	{
 		return "#";
-	}
-
-	/**
-	 * This method starts the actual printing! Prepares variables etc. and calls printProcedure() to
-	 * print the BPL code
-	 */
-	private void printDocument(String originalFilename)
-	{
-		printProcedure();
 	}
 
 	/**
@@ -78,26 +80,14 @@ public class VerisigPrinter extends ToolPrinter
 		return AutomatonUtil.simplifyExpression(subbed);
 	}
 
-	/**
-	 * Print the actual Flow* code
-	 */
-	private void printProcedure()
-	{
-		//printVars();
-
-
-	}
-
 	/***
 	 * Print variable declarations and their initial value assignments plus a list of all constants
 	 */
 	private void printVars()
 	{
-		boolean first = true;
-
 		for (String v : ha.variables)
 		{
-
+			states.add(v);
 		}
 	}
 
@@ -119,7 +109,7 @@ public class VerisigPrinter extends ToolPrinter
 			}
 			
 			Tab modeTab = new Tab();
-			plant.put(modeIndex, modeTab);
+			modes.put(modeIndex, modeTab);
 			modeTab.put("name", locName.trim());
 
 			if (isNonLinearDynamics(mode.flowDynamics))
@@ -220,11 +210,11 @@ public class VerisigPrinter extends ToolPrinter
 			if( DNN_IDENTIFIER.equals(fromName) ) {
 				Tab transitionSet;
 
-				if( plant.containsKey("dnn2plant")) {
-					transitionSet = (Tab)plant.get("dnn2plant");
+				if( glue.containsKey("dnn2plant")) {
+					transitionSet = (Tab)glue.get("dnn2plant");
 				} else {
 					transitionSet = new Tab();
-					plant.put("dnn2plant", transitionSet);
+					glue.put("dnn2plant", transitionSet);
 				}
 
 				Arr transitions;
@@ -264,11 +254,11 @@ public class VerisigPrinter extends ToolPrinter
 			} else if( DNN_IDENTIFIER.equals(toName)) {
 				Tab transitionSet;
 
-				if( plant.containsKey("plant2dnn")) {
-					transitionSet = (Tab)plant.get("plant2dnn");
+				if( glue.containsKey("plant2dnn")) {
+					transitionSet = (Tab)glue.get("plant2dnn");
 				} else {
 					transitionSet = new Tab();
-					plant.put("plant2dnn", transitionSet);
+					glue.put("plant2dnn", transitionSet);
 				}
 
 				Arr transitions;
@@ -306,7 +296,7 @@ public class VerisigPrinter extends ToolPrinter
 					resets.add((e.getKey() + "\' := " + ei).trim());
 				}
 			} else {
-				Tab mode = (Tab)plant.get(fromModeIndex);
+				Tab mode = (Tab)modes.get(fromModeIndex);
 				Tab transitionSet;
 
 				if( mode.containsKey("transitions")) {
@@ -399,6 +389,7 @@ public class VerisigPrinter extends ToolPrinter
 		flowstarExpressionPrinter = new FlowstarExpressionPrinter();
 		Expression.expressionPrinter = flowstarExpressionPrinter;
 
+		printVars();
 		printModes();
 		printJumps();
 
