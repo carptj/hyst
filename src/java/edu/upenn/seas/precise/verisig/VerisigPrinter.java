@@ -12,6 +12,7 @@ import com.verivital.hyst.ir.base.AutomatonMode;
 import com.verivital.hyst.ir.base.AutomatonTransition;
 import com.verivital.hyst.ir.base.BaseComponent;
 import com.verivital.hyst.ir.base.ExpressionInterval;
+import com.verivital.hyst.ir.network.NetworkComponent;
 import com.verivital.hyst.passes.basic.SubstituteConstantsPass;
 import com.verivital.hyst.printers.ToolPrinter;
 import com.verivital.hyst.util.*;
@@ -389,7 +390,12 @@ public class VerisigPrinter extends ToolPrinter
 	@Override
 	protected void printAutomaton()
 	{
-		this.ha = (BaseComponent) config.root;
+		if( config.root instanceof NetworkComponent ) {
+			this.ha = (BaseComponent)((NetworkComponent) config.root).children.values().iterator().next().child;
+		} else {
+			this.ha = (BaseComponent) config.root;
+		}
+		
 		flowstarExpressionPrinter = new FlowstarExpressionPrinter();
 		Expression.expressionPrinter = flowstarExpressionPrinter;
 
