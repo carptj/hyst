@@ -25,7 +25,7 @@ import java.util.Map.Entry;
 /**
  * Printer for Flow* models. Based on Chris' Boogie printer.
  * 
- * @author Stanley Bak (8-2014)
+ * @author Taylor Carpenter (2-2019)
  *
  */
 public class VerisigPrinter extends ToolPrinter
@@ -37,6 +37,8 @@ public class VerisigPrinter extends ToolPrinter
 
 	private int modeIndex = 1;
 	private HashMap<String, Integer> nameIndexMapping;
+	
+	private final String DNN_IDENTIFIER = "DNN";
 
 	public VerisigPrinter()
 	{
@@ -111,6 +113,10 @@ public class VerisigPrinter extends ToolPrinter
 			String locName = e.getKey();
 			nameIndexMapping.put(locName, modeIndex);
 
+			if(DNN_IDENTIFIER.equals(locName)) {
+				continue;
+			}
+			
 			Tab modeTab = new Tab();
 			plant.put(modeIndex, modeTab);
 			modeTab.put("name", locName.trim());
@@ -159,6 +165,10 @@ public class VerisigPrinter extends ToolPrinter
 
 			modeIndex++;
 		}
+		
+		if(!nameIndexMapping.containsKey(DNN_IDENTIFIER)) {
+			throw new AutomatonExportException("No DNN mode found.");
+		}
 	}
 
 	private boolean isNonLinearDynamics(LinkedHashMap<String, ExpressionInterval> flowDynamics)
@@ -206,50 +216,139 @@ public class VerisigPrinter extends ToolPrinter
 						"Unknown mode '" + toName + "' found as destination of transition");
 			}
 
-			Tab mode = (Tab)plant.get(fromModeIndex);
-			Tab transitionSet;
+			if( DNN_IDENTIFIER.equals(fromName) ) {
+				Tab transitionSet;
 
-			if( mode.containsKey("transitions")) {
-				transitionSet = (Tab)mode.get("transitions");
-			} else {
-				transitionSet = new Tab();
-				mode.put("transitions", transitionSet);
-			}
-
-			String transitionKey = String.format("(%d,%d)", fromModeIndex, toModeIndex);
-			Arr transitions;
-			if( transitionSet.containsKey(transitionKey)) {
-				transitions = (Arr) transitionSet.get(transitionKey);
-			} else {
-				transitions = new Arr();
-				transitionSet.put(transitionKey, transitions);
-			}
-
-			Tab transition = new Tab();
-			transitions.add(transition);
-
-			Arr guards = new Arr();
-			transition.put("guards", guards);
-
-			if (!guard.equals(Constant.TRUE))
-			{
-				String s = guard.toString();
-				String[] gs = s.split("&");
-
-				for (String g : gs) {
-					guards.add(g.trim());
+				if( plant.containsKey("dnn2plant")) {
+					transitionSet = (Tab)plant.get("dnn2plant");
+				} else {
+					transitionSet = new Tab();
+					plant.put("dnn2plant", transitionSet);
 				}
-			}
 
-			Arr resets = new Arr();
-			transition.put("reset", resets);
+				Arr transitions;
+				if( transitionSet.containsKey(toModeIndex)) {
+					transitions = (Arr) transitionSet.get(toModeIndex);
+				} else {
+					transitions = new Arr();
+					transitionSet.put(toModeIndex, transitions);
+				}
 
-			for (Entry<String, ExpressionInterval> e : t.reset.entrySet())
-			{
-				ExpressionInterval ei = e.getValue();
-				ei.setExpression(simplifyExpression(ei.getExpression()));
+				Tab transition = new Tab();
+				transitions.add(transition);
 
-				resets.add((e.getKey() + "\' := " + ei).trim());
+				Arr guards = new Arr();
+				transition.put("guards", guards);
+
+				if (!guard.equals(Constant.TRUE))
+				{
+					String s = guard.toString();
+					String[] gs = s.split("&");
+
+					for (String g : gs) {
+						guards.add(g.trim());
+					}
+				}
+
+				Arr resets = new Arr();
+				transition.put("reset", resets);
+
+				for (Entry<String, ExpressionInterval> e : t.reset.entrySet())
+				{
+					ExpressionInterval ei = e.getValue();
+					ei.setExpression(simplifyExpression(ei.getExpression()));
+
+					resets.add((e.getKey() + "\' := " + ei).trim());
+				}
+			} else if( DNN_IDENTIFIER.equals(toName)) {
+				Tab transitionSet;
+
+				if( plant.containsKey("plant2dnn")) {
+					transitionSet = (Tab)plant.get("plant2dnn");
+				} else {
+					transitionSet = new Tab();
+					plant.put("plant2dnn", transitionSet);
+				}
+
+				Arr transitions;
+				if( transitionSet.containsKey(fromModeIndex)) {
+					transitions = (Arr) transitionSet.get(fromModeIndex);
+				} else {
+					transitions = new Arr();
+					transitionSet.put(fromModeIndex, transitions);
+				}
+
+				Tab transition = new Tab();
+				transitions.add(transition);
+
+				Arr guards = new Arr();
+				transition.put("guards", guards);
+
+				if (!guard.equals(Constant.TRUE))
+				{
+					String s = guard.toString();
+					String[] gs = s.split("&");
+
+					for (String g : gs) {
+						guards.add(g.trim());
+					}
+				}
+
+				Arr resets = new Arr();
+				transition.put("reset", resets);
+
+				for (Entry<String, ExpressionInterval> e : t.reset.entrySet())
+				{
+					ExpressionInterval ei = e.getValue();
+					ei.setExpression(simplifyExpression(ei.getExpression()));
+
+					resets.add((e.getKey() + "\' := " + ei).trim());
+				}
+			} else {
+				Tab mode = (Tab)plant.get(fromModeIndex);
+				Tab transitionSet;
+
+				if( mode.containsKey("transitions")) {
+					transitionSet = (Tab)mode.get("transitions");
+				} else {
+					transitionSet = new Tab();
+					mode.put("transitions", transitionSet);
+				}
+
+				Arr transitions;
+				if( transitionSet.containsKey(toModeIndex)) {
+					transitions = (Arr) transitionSet.get(toModeIndex);
+				} else {
+					transitions = new Arr();
+					transitionSet.put(toModeIndex, transitions);
+				}
+
+				Tab transition = new Tab();
+				transitions.add(transition);
+
+				Arr guards = new Arr();
+				transition.put("guards", guards);
+
+				if (!guard.equals(Constant.TRUE))
+				{
+					String s = guard.toString();
+					String[] gs = s.split("&");
+
+					for (String g : gs) {
+						guards.add(g.trim());
+					}
+				}
+
+				Arr resets = new Arr();
+				transition.put("reset", resets);
+
+				for (Entry<String, ExpressionInterval> e : t.reset.entrySet())
+				{
+					ExpressionInterval ei = e.getValue();
+					ei.setExpression(simplifyExpression(ei.getExpression()));
+
+					resets.add((e.getKey() + "\' := " + ei).trim());
+				}
 			}
 		}
 	}
@@ -343,7 +442,7 @@ public class VerisigPrinter extends ToolPrinter
 	@Override
 	public String getCommandLineFlag()
 	{
-		return "edu/upenn/seas/precise/verisig";
+		return "verisig";
 	}
 
 	@Override

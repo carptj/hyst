@@ -70,6 +70,7 @@ import com.verivital.hyst.util.StringPairsWithSpacesArrayOptionHandler;
 import com.verivital.hyst.util.StringWithSpacesArrayOptionHandler;
 
 import de.uni_freiburg.informatik.swt.sxhybridautomaton.SpaceExDocument;
+import edu.upenn.seas.precise.verisig.VerisigPrinter;
 
 /**
  * Main start class for Hyst If run without args, a GUI will be used. If run with args, the
@@ -81,7 +82,7 @@ public class Hyst
 	private final ToolPrinter[] printers = { new FlowstarPrinter(), new DReachPrinter(),
 			new HyCreate2Printer(), new HyCompPrinter(), new PythonQBMCPrinter(),
 			new SpaceExPrinter(), new SimulinkStateflowPrinter(), new PySimPrinter(),
-			new HylaaPrinter() };
+			new HylaaPrinter(), new VerisigPrinter() };
 
 	// list of supported model transformation passes (add new ones here)
 	private final TransformationPass[] passes = { new AddIdentityResetPass(),
