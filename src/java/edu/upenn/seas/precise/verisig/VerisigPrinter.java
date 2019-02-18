@@ -141,7 +141,7 @@ public class VerisigPrinter extends ToolPrinter
 
 
 			Arr invariants = new Arr();
-			modeTab.put("invariants", invariants);
+			modeTab.put("invariant", invariants);
 			Expression inv = simplifyExpression(mode.invariant);
 
 			if (!inv.equals(Constant.TRUE))
@@ -154,6 +154,9 @@ public class VerisigPrinter extends ToolPrinter
 				}
 			}
 
+			
+			Tab transitions = new Tab();
+			modeTab.put("transitions", transitions);
 			modeIndex++;
 		}
 		
@@ -229,7 +232,7 @@ public class VerisigPrinter extends ToolPrinter
 				transitions.add(transition);
 
 				Arr guards = new Arr();
-				transition.put("guards", guards);
+				transition.put("guard", guards);
 
 				if (!guard.equals(Constant.TRUE))
 				{
@@ -273,7 +276,7 @@ public class VerisigPrinter extends ToolPrinter
 				transitions.add(transition);
 
 				Arr guards = new Arr();
-				transition.put("guards", guards);
+				transition.put("guard", guards);
 
 				if (!guard.equals(Constant.TRUE))
 				{
@@ -318,7 +321,7 @@ public class VerisigPrinter extends ToolPrinter
 				transitions.add(transition);
 
 				Arr guards = new Arr();
-				transition.put("guards", guards);
+				transition.put("guard", guards);
 
 				if (!guard.equals(Constant.TRUE))
 				{
@@ -392,6 +395,14 @@ public class VerisigPrinter extends ToolPrinter
 		printVars();
 		printModes();
 		printJumps();
+		
+		Tab nameMap = new Tab();
+		for(Entry<String,Integer> mapping : nameIndexMapping.entrySet()) {
+			nameMap.put(mapping.getValue(), mapping.getKey());
+		}
+		
+		plant.put("name_map", nameMap);
+		
 
 		Pickler pickler = new Pickler();
 		switch(outputType) {
