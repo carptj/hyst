@@ -742,7 +742,7 @@ public class HystFrame extends JFrame implements ActionListener, WindowListener,
 				{
 					public void run()
 					{
-						int code = Hyst.runWithArguments(args);
+						int code = Hyst.runWithArguments(args).getKey();
 						String s = "\nConversion completed with exit code " + code + ": "
 								+ Hyst.ExitCode.values()[code];
 

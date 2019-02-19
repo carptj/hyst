@@ -104,7 +104,7 @@ public class VerisigPrinter extends ToolPrinter
 			String locName = e.getKey();
 			nameIndexMapping.put(locName, modeIndex);
 
-			if(DNN_IDENTIFIER.equals(locName)) {
+			if(locName.contains(DNN_IDENTIFIER)) {
 				continue;
 			}
 			
@@ -160,9 +160,9 @@ public class VerisigPrinter extends ToolPrinter
 			modeIndex++;
 		}
 		
-		if(!nameIndexMapping.containsKey(DNN_IDENTIFIER)) {
+		/*if(!nameIndexMapping.containsKey(DNN_IDENTIFIER)) {
 			throw new AutomatonExportException("No DNN mode found.");
-		}
+		}*/
 	}
 
 	private boolean isNonLinearDynamics(LinkedHashMap<String, ExpressionInterval> flowDynamics)
@@ -210,7 +210,7 @@ public class VerisigPrinter extends ToolPrinter
 						"Unknown mode '" + toName + "' found as destination of transition");
 			}
 
-			if( DNN_IDENTIFIER.equals(fromName) ) {
+			if( fromName.contains(DNN_IDENTIFIER) ) {
 				Tab transitionSet;
 
 				if( glue.containsKey("dnn2plant")) {
@@ -254,7 +254,7 @@ public class VerisigPrinter extends ToolPrinter
 
 					resets.add((e.getKey() + "\' := " + ei).trim());
 				}
-			} else if( DNN_IDENTIFIER.equals(toName)) {
+			} else if( toName.contains(DNN_IDENTIFIER)) {
 				Tab transitionSet;
 
 				if( glue.containsKey("plant2dnn")) {

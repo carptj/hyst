@@ -71,6 +71,7 @@ import com.verivital.hyst.util.StringWithSpacesArrayOptionHandler;
 
 import de.uni_freiburg.informatik.swt.sxhybridautomaton.SpaceExDocument;
 import edu.upenn.seas.precise.verisig.VerisigPrinter;
+import javafx.util.Pair;
 
 /**
  * Main start class for Hyst If run without args, a GUI will be used. If run with args, the
@@ -284,7 +285,7 @@ public class Hyst
 		final String FLAG_GUI = "-gui";
 
 		if (args.length > 0 && !args[0].equals(FLAG_GUI))
-			System.exit(Hyst.runWithArguments(args));
+			System.exit(Hyst.runWithArguments(args).getKey());
 		else
 		{
 			// show GUI
@@ -312,11 +313,14 @@ public class Hyst
 		}
 	}
 
-	public static int runWithArguments(String[] args)
+	public static Pair<Integer,String> runWithArguments(String[] args)
 	{
 		programArguments = makeSingleArgument(args);
 
-		return new Hyst().run(args).ordinal();
+		Hyst hyst = new Hyst();
+		ExitCode status = hyst.run(args);
+		
+		return new Pair<>(status.ordinal(), hyst.toolPrinter.outputString.toString());
 	}
 
 	private void parseInput() throws CmdLineException
