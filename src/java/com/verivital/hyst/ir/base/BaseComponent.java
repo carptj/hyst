@@ -208,19 +208,22 @@ public class BaseComponent extends Component
 
 			Set<String> flows = am.flowDynamics.keySet();
 
-			if (firstModeName == null)
+			if (Configuration.DO_FLOW_VALIDATION) 
 			{
-				firstModeName = name;
-				firstModeFlows = flows;
-			}
-			else
-			{
-				if (!flows.equals(firstModeFlows))
+				if (firstModeName == null)
 				{
-					throw new AutomatonValidationException("BaseComponent "
-							+ getPrintableInstanceName()
-							+ ": Variables with defined flows in mode '" + firstModeName + "' ("
-							+ firstModeFlows + ") differ from mode '" + name + "' (" + flows + ")");
+					firstModeName = name;
+					firstModeFlows = flows;
+				}
+				else
+				{
+					if (!flows.equals(firstModeFlows))
+					{
+						throw new AutomatonValidationException("BaseComponent "
+								+ getPrintableInstanceName()
+								+ ": Variables with defined flows in mode '" + firstModeName + "' ("
+								+ firstModeFlows + ") differ from mode '" + name + "' (" + flows + ")");
+					}
 				}
 			}
 

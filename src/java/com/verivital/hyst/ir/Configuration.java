@@ -22,6 +22,7 @@ import com.verivital.hyst.util.AutomatonUtil;
 public class Configuration
 {
 	public static boolean DO_VALIDATION = true;
+	public static boolean DO_FLOW_VALIDATION = true;
 
 	public AutomatonSettings settings = new AutomatonSettings(this);
 

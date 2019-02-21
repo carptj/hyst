@@ -57,6 +57,9 @@ public class VerisigPrinter extends ToolPrinter
 		plant.put("modes", modes);
 		plant.put("glue", glue);
 		
+		glue.put("dnn2plant", new Tab());
+		glue.put("plant2dnn", new Tab());
+		
 		nameIndexMapping = new HashMap<>();
 	}
 

@@ -70,6 +70,7 @@ import com.verivital.hyst.util.StringPairsWithSpacesArrayOptionHandler;
 import com.verivital.hyst.util.StringWithSpacesArrayOptionHandler;
 
 import de.uni_freiburg.informatik.swt.sxhybridautomaton.SpaceExDocument;
+import edu.upenn.seas.precise.verisig.FlowCompletionPass;
 import edu.upenn.seas.precise.verisig.VerisigPrinter;
 
 /**
@@ -92,7 +93,8 @@ public class Hyst
 			new RemoveSimpleUnsatInvariantsPass(), new ShortenModeNamesPass(),
 			new ContinuizationPass(), new HybridizeMixedTriggeredPass(), new HybridizeMTRawPass(),
 			new FlattenAutomatonPass(), new OrderReductionPass(), new ConvertLutFlowsPass(),
-			new CopyInstancePass(), new ConvertHavocFlows() };
+			new CopyInstancePass(), new ConvertHavocFlows(),
+			new FlowCompletionPass() };
 
 	// list of supported model generators (add new ones here)
 	private final ModelGenerator[] generators = { new IntegralChainGenerator(),
@@ -262,6 +264,9 @@ public class Hyst
 
 	@Option(name = "-novalidate", hidden = true, usage = "disable model validation")
 	public boolean noValidateFlag = false;
+	
+	@Option(name = "-partialflow", hidden = true, usage = "disable validation of complete flows")
+	public boolean partialFlowFlag = false;
 
 	@Option(name = "-testpython", hidden = true, usage = "test if python exists on system")
 	boolean doTestPython = false;
@@ -502,6 +507,14 @@ public class Hyst
 		}
 		else
 			Configuration.DO_VALIDATION = true;
+		
+		if (!partialFlowFlag)
+		{
+			Configuration.DO_FLOW_VALIDATION = false;
+			Hyst.log("Complete flow validation disabled");
+		}
+		else
+			Configuration.DO_FLOW_VALIDATION = true;
 	}
 
 	private ExitCode doTestPython()
