@@ -514,7 +514,7 @@ public class Hyst
 			Hyst.log("Complete flow validation disabled");
 		}
 		else
-			Configuration.DO_FLOW_VALIDATION = true;
+			Configuration.DO_FLOW_VALIDATION = false;
 	}
 
 	private ExitCode doTestPython()
