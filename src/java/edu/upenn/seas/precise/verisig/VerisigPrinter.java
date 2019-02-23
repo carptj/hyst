@@ -20,6 +20,8 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -356,6 +358,11 @@ public class VerisigPrinter extends ToolPrinter
 		public FlowstarExpressionPrinter()
 		{
 			super();
+			
+			constFormatter = new DecimalFormat("#0.0#######", new DecimalFormatSymbols(Locale.ENGLISH));
+			constFormatter.setGroupingUsed(false);
+			constFormatter.setMinimumFractionDigits(1);
+			constFormatter.setMinimumIntegerDigits(1);
 		}
 
 		@Override
