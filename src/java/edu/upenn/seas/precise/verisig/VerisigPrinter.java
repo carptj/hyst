@@ -151,12 +151,7 @@ public class VerisigPrinter extends ToolPrinter
 
 			if (!inv.equals(Constant.TRUE))
 			{
-				String s = inv.toString();
-				String[] invars = s.split("&");
-
-				for (String invar : invars) {
-					invariants.add(invar.trim());
-				}
+				invariants.addAll(splitClauses(inv));
 			}
 
 			
@@ -239,14 +234,11 @@ public class VerisigPrinter extends ToolPrinter
 				Arr guards = new Arr();
 				transition.put("guard", guards);
 
-				if (!guard.equals(Constant.TRUE))
-				{
-					String s = guard.toString();
-					String[] gs = s.split("&");
+				Expression g = simplifyExpression(guard);
 
-					for (String g : gs) {
-						guards.add(g.trim());
-					}
+				if (!g.equals(Constant.TRUE))
+				{
+					guards.addAll(splitClauses(g));
 				}
 
 				Arr resets = new Arr();
@@ -283,14 +275,11 @@ public class VerisigPrinter extends ToolPrinter
 				Arr guards = new Arr();
 				transition.put("guard", guards);
 
-				if (!guard.equals(Constant.TRUE))
-				{
-					String s = guard.toString();
-					String[] gs = s.split("&");
+				Expression g = simplifyExpression(guard);
 
-					for (String g : gs) {
-						guards.add(g.trim());
-					}
+				if (!g.equals(Constant.TRUE))
+				{
+					guards.addAll(splitClauses(g));
 				}
 
 				Arr resets = new Arr();
@@ -328,14 +317,11 @@ public class VerisigPrinter extends ToolPrinter
 				Arr guards = new Arr();
 				transition.put("guard", guards);
 
-				if (!guard.equals(Constant.TRUE))
-				{
-					String s = guard.toString();
-					String[] gs = s.split("&");
+				Expression g = simplifyExpression(guard);
 
-					for (String g : gs) {
-						guards.add(g.trim());
-					}
+				if (!g.equals(Constant.TRUE))
+				{
+					guards.addAll(splitClauses(g));
 				}
 
 				Arr resets = new Arr();
@@ -388,6 +374,31 @@ public class VerisigPrinter extends ToolPrinter
 			return "1 <= 0"; // not really sure if this will work
 		}
 
+	}
+	
+	protected List<String> splitClauses(Expression expression) {
+		List<String> clauses = new ArrayList<>();
+
+		String s = expression.toString();
+		int parenCount = 0;
+		int lowerBound = 0;
+		for( int upperBound = 0; upperBound < s.length(); upperBound++) {
+			switch(s.charAt(upperBound)) {
+			case '(':
+				parenCount++;
+				break;
+			case ')':
+				parenCount--;
+				break;
+			case '&':
+				if(parenCount == 0) {
+					clauses.add(s.substring(lowerBound, upperBound).trim());
+					lowerBound = upperBound + 1;
+				}
+			}
+		}
+		
+		return clauses;
 	}
 
 	@Override
