@@ -33,10 +33,18 @@ import java.util.Map.Entry;
  */
 public class VerisigPrinter extends ToolPrinter
 {
+	private static VerisigPrinter INSTANCE;
+	public static VerisigPrinter getInstance() {
+		return INSTANCE;
+	}
+	
+	@Option(name = "-in-memory", usage = "produce no output")
+	boolean inMemory = false;
+	
 	FlowstarExpressionPrinter flowstarExpressionPrinter;
 
 	private BaseComponent ha;
-	private Tab plant;
+	public Tab plant;
 	private Arr states;
 	private Tab modes;
 	private Tab glue;
@@ -63,6 +71,8 @@ public class VerisigPrinter extends ToolPrinter
 		glue.put("plant2dnn", new Tab());
 		
 		nameIndexMapping = new HashMap<>();
+		
+		INSTANCE = this;
 	}
 
 	@Override
@@ -107,14 +117,14 @@ public class VerisigPrinter extends ToolPrinter
 			AutomatonMode mode = e.getValue();
 
 			String locName = e.getKey();
-			nameIndexMapping.put(locName, modeIndex);
+			nameIndexMapping.put(locName, modeIndex++);
 
 			if(locName.contains(DNN_IDENTIFIER)) {
 				continue;
 			}
 			
 			Tab modeTab = new Tab();
-			modes.put(modeIndex, modeTab);
+			modes.put(modeIndex-1, modeTab);
 			modeTab.put("name", locName.trim());
 
 			if (isNonLinearDynamics(mode.flowDynamics))
@@ -157,7 +167,6 @@ public class VerisigPrinter extends ToolPrinter
 			
 			Tab transitions = new Tab();
 			modeTab.put("transitions", transitions);
-			modeIndex++;
 		}
 		
 		/*if(!nameIndexMapping.containsKey(DNN_IDENTIFIER)) {
@@ -425,40 +434,34 @@ public class VerisigPrinter extends ToolPrinter
 		plant.put("name_map", nameMap);
 		
 
-		Pickler pickler = new Pickler();
-		switch(outputType) {
-		case FILE:
-			pickler = new Pickler();
-			try {
-				pickler.dump(plant, outputStream);
-			} catch (IOException e) {
-				throw new AutomatonExportException("Error pickling", e);
+		if(!inMemory) {
+			Pickler pickler = new Pickler();
+			switch(outputType) {
+			case FILE:
+				pickler = new Pickler();
+				try {
+					pickler.dump(plant, outputStream);
+				} catch (IOException e) {
+					throw new AutomatonExportException("Error pickling", e);
+				}
+				break;
+			case GUI:
+				break;
+			case NONE:
+				break;
+			case STDOUT:
+				break;
+			case STRING:
+				pickler = new Pickler();
+				try {
+					pickler.dump(plant, outputStream);
+				} catch (IOException e) {
+					throw new AutomatonExportException("Error pickling", e);
+				}
+				break;
+			default:
+				break;
 			}
-			break;
-		case GUI:
-			break;
-		case NONE:
-			break;
-		case STDOUT:
-			break;
-		case STRING:
-			pickler = new Pickler();
-			try {
-				pickler.dump(plant, outputStream);
-			} catch (IOException e) {
-				throw new AutomatonExportException("Error pickling", e);
-			}
-			break;
-		default:
-			break;
-		
-		
-		}
-		
-		if( outputType == OutputType.FILE ) {
-			
-		} else {
-			printLine(plant.toString(true));
 		}
 	}
 
