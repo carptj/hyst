@@ -445,12 +445,6 @@ public class VerisigPrinter extends ToolPrinter
 					throw new AutomatonExportException("Error pickling", e);
 				}
 				break;
-			case GUI:
-				break;
-			case NONE:
-				break;
-			case STDOUT:
-				break;
 			case STRING:
 				pickler = new Pickler();
 				try {
@@ -460,6 +454,7 @@ public class VerisigPrinter extends ToolPrinter
 				}
 				break;
 			default:
+				printLine(plant.toString(true));
 				break;
 			}
 		}
