@@ -391,7 +391,8 @@ public class VerisigPrinter extends ToolPrinter
 		String s = expression.toString();
 		int parenCount = 0;
 		int lowerBound = 0;
-		for( int upperBound = 0; upperBound < s.length(); upperBound++) {
+		int upperBound = 0;
+		for( ; upperBound < s.length(); upperBound++) {
 			switch(s.charAt(upperBound)) {
 			case '(':
 				parenCount++;
@@ -407,6 +408,7 @@ public class VerisigPrinter extends ToolPrinter
 			}
 		}
 		
+		clauses.add(s.substring(lowerBound, upperBound).trim());
 		return clauses;
 	}
 
