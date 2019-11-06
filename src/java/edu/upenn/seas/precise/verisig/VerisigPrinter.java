@@ -354,7 +354,7 @@ public class VerisigPrinter extends ToolPrinter
 		{
 			super();
 			
-			constFormatter = new DecimalFormat("#0.0#########", new DecimalFormatSymbols(Locale.ENGLISH));
+			constFormatter = new DecimalFormat("#0.0##############", new DecimalFormatSymbols(Locale.ENGLISH));
 			constFormatter.setGroupingUsed(false);
 			constFormatter.setMinimumFractionDigits(1);
 			constFormatter.setMinimumIntegerDigits(1);
