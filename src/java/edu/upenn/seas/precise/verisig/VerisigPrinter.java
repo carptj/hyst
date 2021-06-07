@@ -16,7 +16,6 @@ import com.verivital.hyst.ir.network.NetworkComponent;
 import com.verivital.hyst.passes.basic.SubstituteConstantsPass;
 import com.verivital.hyst.printers.ToolPrinter;
 import com.verivital.hyst.util.*;
-import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.Option;
 
 import java.io.IOException;
@@ -44,10 +43,9 @@ public class VerisigPrinter extends ToolPrinter
 	FlowstarExpressionPrinter flowstarExpressionPrinter;
 
 	private BaseComponent ha;
-	public Tab plant;
+	public Tab system;
 	private Arr states;
 	private Tab modes;
-	private Tab glue;
 
 	private int modeIndex = 1;
 	private HashMap<String, Integer> nameIndexMapping;
@@ -58,18 +56,13 @@ public class VerisigPrinter extends ToolPrinter
 	{
 		preconditions = new Preconditions(true);
 
-		plant = new Tab();
+		system = new Tab();
 		states = new Arr();
 		modes = new Tab();
-		glue = new Tab();
-		
-		plant.put("states", states);
-		plant.put("modes", modes);
-		plant.put("glue", glue);
-		
-		glue.put("dnn2plant", new Tab());
-		glue.put("plant2dnn", new Tab());
-		
+
+		system.put("states", states);
+		system.put("modes", modes);
+
 		nameIndexMapping = new HashMap<>();
 		
 		INSTANCE = this;
@@ -118,10 +111,6 @@ public class VerisigPrinter extends ToolPrinter
 
 			String locName = e.getKey();
 			nameIndexMapping.put(locName, modeIndex++);
-
-			if(locName.contains(DNN_IDENTIFIER)) {
-				continue;
-			}
 			
 			Tab modeTab = new Tab();
 			modes.put(modeIndex-1, modeTab);
@@ -219,130 +208,46 @@ public class VerisigPrinter extends ToolPrinter
 						"Unknown mode '" + toName + "' found as destination of transition");
 			}
 
-			if( fromName.contains(DNN_IDENTIFIER) ) {
-				Tab transitionSet;
+			Tab mode = (Tab)modes.get(fromModeIndex);
+			Tab transitionSet;
 
-				if( glue.containsKey("dnn2plant")) {
-					transitionSet = (Tab)glue.get("dnn2plant");
-				} else {
-					transitionSet = new Tab();
-					glue.put("dnn2plant", transitionSet);
-				}
-
-				Arr transitions;
-				if( transitionSet.containsKey(toModeIndex)) {
-					transitions = (Arr) transitionSet.get(toModeIndex);
-				} else {
-					transitions = new Arr();
-					transitionSet.put(toModeIndex, transitions);
-				}
-
-				Tab transition = new Tab();
-				transitions.add(transition);
-
-				Arr guards = new Arr();
-				transition.put("guard", guards);
-
-				Expression g = simplifyExpression(guard);
-
-				if (!g.equals(Constant.TRUE))
-				{
-					guards.addAll(splitClauses(g));
-				}
-
-				Arr resets = new Arr();
-				transition.put("reset", resets);
-
-				for (Entry<String, ExpressionInterval> e : t.reset.entrySet())
-				{
-					ExpressionInterval ei = e.getValue();
-					ei.setExpression(simplifyExpression(ei.getExpression()));
-
-					resets.add((e.getKey() + "\' := " + ei).trim());
-				}
-			} else if( toName.contains(DNN_IDENTIFIER)) {
-				Tab transitionSet;
-
-				if( glue.containsKey("plant2dnn")) {
-					transitionSet = (Tab)glue.get("plant2dnn");
-				} else {
-					transitionSet = new Tab();
-					glue.put("plant2dnn", transitionSet);
-				}
-
-				Arr transitions;
-				if( transitionSet.containsKey(fromModeIndex)) {
-					transitions = (Arr) transitionSet.get(fromModeIndex);
-				} else {
-					transitions = new Arr();
-					transitionSet.put(fromModeIndex, transitions);
-				}
-
-				Tab transition = new Tab();
-				transitions.add(transition);
-
-				Arr guards = new Arr();
-				transition.put("guard", guards);
-
-				Expression g = simplifyExpression(guard);
-
-				if (!g.equals(Constant.TRUE))
-				{
-					guards.addAll(splitClauses(g));
-				}
-
-				Arr resets = new Arr();
-				transition.put("reset", resets);
-
-				for (Entry<String, ExpressionInterval> e : t.reset.entrySet())
-				{
-					ExpressionInterval ei = e.getValue();
-					ei.setExpression(simplifyExpression(ei.getExpression()));
-
-					resets.add((e.getKey() + "\' := " + ei).trim());
-				}
+			if( mode.containsKey("transitions")) {
+				transitionSet = (Tab)mode.get("transitions");
 			} else {
-				Tab mode = (Tab)modes.get(fromModeIndex);
-				Tab transitionSet;
+				transitionSet = new Tab();
+				mode.put("transitions", transitionSet);
+			}
 
-				if( mode.containsKey("transitions")) {
-					transitionSet = (Tab)mode.get("transitions");
-				} else {
-					transitionSet = new Tab();
-					mode.put("transitions", transitionSet);
-				}
+			Arr transitions;
+			if( transitionSet.containsKey(toModeIndex)) {
+				transitions = (Arr) transitionSet.get(toModeIndex);
+			} else {
+				transitions = new Arr();
+				transitionSet.put(toModeIndex, transitions);
+			}
 
-				Arr transitions;
-				if( transitionSet.containsKey(toModeIndex)) {
-					transitions = (Arr) transitionSet.get(toModeIndex);
-				} else {
-					transitions = new Arr();
-					transitionSet.put(toModeIndex, transitions);
-				}
+			Tab transition = new Tab();
+			transitions.add(transition);
 
-				Tab transition = new Tab();
-				transitions.add(transition);
+			Arr guards = new Arr();
+			transition.put("guard", guards);
 
-				Arr guards = new Arr();
-				transition.put("guard", guards);
+			Expression g = simplifyExpression(guard);
 
-				Expression g = simplifyExpression(guard);
+			if (!g.equals(Constant.TRUE))
+			{
+				guards.addAll(splitClauses(g));
+			}
 
-				if (!g.equals(Constant.TRUE))
-				{
-					guards.addAll(splitClauses(g));
-				}
+			Arr resets = new Arr();
+			transition.put("reset", resets);
 
-				Arr resets = new Arr();
-				transition.put("reset", resets);
+			for (Entry<String, ExpressionInterval> e : t.reset.entrySet())
+			{
+				ExpressionInterval ei = e.getValue();
+				ei.setExpression(simplifyExpression(ei.getExpression()));
 
-				for (Entry<String, ExpressionInterval> e : t.reset.entrySet())
-				{
-					ExpressionInterval ei = e.getValue();
-					ei.setExpression(simplifyExpression(ei.getExpression()));
-
-					resets.add((e.getKey() + "\' := " + ei).trim());
-				}
+				resets.add((e.getKey() + "\' := " + ei).trim());
 			}
 		}
 	}
@@ -433,7 +338,7 @@ public class VerisigPrinter extends ToolPrinter
 			nameMap.put(mapping.getValue(), mapping.getKey());
 		}
 		
-		plant.put("name_map", nameMap);
+		system.put("name_map", nameMap);
 		
 
 		if(!inMemory) {
@@ -442,7 +347,7 @@ public class VerisigPrinter extends ToolPrinter
 			case FILE:
 				pickler = new Pickler();
 				try {
-					pickler.dump(plant, outputStream);
+					pickler.dump(system, outputStream);
 				} catch (IOException e) {
 					throw new AutomatonExportException("Error pickling", e);
 				}
@@ -450,13 +355,13 @@ public class VerisigPrinter extends ToolPrinter
 			case STRING:
 				pickler = new Pickler();
 				try {
-					pickler.dump(plant, outputStream);
+					pickler.dump(system, outputStream);
 				} catch (IOException e) {
 					throw new AutomatonExportException("Error pickling", e);
 				}
 				break;
 			default:
-				printLine(plant.toString(true));
+				printLine(system.toString(true));
 				break;
 			}
 		}
